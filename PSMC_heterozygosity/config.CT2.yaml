@@ -1,0 +1,99 @@
+## LINK TO SLIDES / MANUAL:
+## SOFTWARE
+PSMC_DIR: "/home/krishang/software/psmc/psmc"
+BCFTOOLS: "/home/krishang/software/bcftools/bcftools-1.13/bin/bcftools"
+VCFUTILS: "/home/krishang/software/bcftools/bcftools-1.13/bin/vcfutils.pl"
+
+ALLELE_SUPPORT: 2 # 1 3
+MIN_MQ: 30
+MIN_BQ: 25
+
+OUTDIR: "results_CT2"
+REF: "/home/users/xiaodong/Documents/Project/African1kg/wildebeest_own/reference_inc_MT/BlueWildebeest_HiC_withMT.fasta"   ## must be the same as the one used for mapping
+GOODBED: "/home/users/xiaodong/Documents/Project/Wildebeest/siteQC/new.siteQC.good.bed"  ## Sites that will be INCLUDED in the analysis
+
+## see github for a script to make config
+
+SAMPLES:
+  CTauKeW__642: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauKeW__642.BlueWildebeestWithMT.bam
+  CTauZw__1277: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauZw__1277.BlueWildebeestWithMT.bam
+  CTauTzN_4497: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauTzN_4497.BlueWildebeestWithMT.bam
+  CTauZw__1272: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauZw__1272.BlueWildebeestWithMT.bam
+  CTauTzS_3709: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauTzS_3709.BlueWildebeestWithMT.bam
+  CTauKeW__644: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauKeW__644.BlueWildebeestWithMT.bam
+  CTauKeW__648: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauKeW__648.BlueWildebeestWithMT.bam
+  CTauTzN_8870: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauTzN_8870.BlueWildebeestWithMT.bam
+  CTauKeS__707: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauKeS__707.BlueWildebeestWithMT.bam
+  CTauBwC__760: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauBwC__760.BlueWildebeestWithMT.bam
+  CTauTzS_3711: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauTzS_3711.BlueWildebeestWithMT.bam
+  CTauBwC__767: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauBwC__767.BlueWildebeestWithMT.bam
+  CTauNaC__935: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauNaC__935.BlueWildebeestWithMT.bam
+  CTauKeW__641: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauKeW__641.BlueWildebeestWithMT.bam
+  CTauTzN_5188: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauTzN_5188.BlueWildebeestWithMT.bam
+  CTauZmE_3749: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauZmE_3749.BlueWildebeestWithMT.bam
+  CTauBwN_2053: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauBwN_2053.BlueWildebeestWithMT.bam
+  CTauBwN_2252: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauBwN_2252.BlueWildebeestWithMT.bam
+  CTauBwN_2248: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauBwN_2248.BlueWildebeestWithMT.bam
+  CTauTzS_8872: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CTauTzS_8872.BlueWildebeestWithMT.bam
+
+DEPTHS:
+  CTauKeW__642:
+    - 8
+    - 40
+  CTauZw__1277:
+    - 8
+    - 38
+  CTauTzN_4497:
+    - 8
+    - 44
+  CTauZw__1272:
+    - 8
+    - 40
+  CTauTzS_3709:
+    - 8
+    - 42
+  CTauKeW__644:
+    - 8
+    - 42
+  CTauKeW__648:
+    - 8
+    - 42
+  CTauTzN_8870:
+    - 8
+    - 32
+  CTauKeS__707:
+    - 8
+    - 30
+  CTauBwC__760:
+    - 8
+    - 28
+  CTauTzS_3711:
+    - 8
+    - 40
+  CTauBwC__767:
+    - 8
+    - 26
+  CTauNaC__935:
+    - 8
+    - 42
+  CTauKeW__641:
+    - 8
+    - 44
+  CTauTzN_5188:
+    - 8
+    - 36
+  CTauZmE_3749:
+    - 8
+    - 32
+  CTauBwN_2053:
+    - 8
+    - 40
+  CTauBwN_2252:
+    - 8
+    - 40
+  CTauBwN_2248:
+    - 8
+    - 38
+  CTauTzS_8872:
+    - 8
+    - 36

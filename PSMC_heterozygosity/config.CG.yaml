@@ -1,0 +1,99 @@
+## LINK TO SLIDES / MANUAL:
+## SOFTWARE
+PSMC_DIR: "/home/krishang/software/psmc/psmc"
+BCFTOOLS: "/home/krishang/software/bcftools/bcftools-1.13/bin/bcftools"
+VCFUTILS: "/home/krishang/software/bcftools/bcftools-1.13/bin/vcfutils.pl"
+
+ALLELE_SUPPORT: 2 # 1 3
+MIN_MQ: 30
+MIN_BQ: 25
+
+OUTDIR: "results_CG"
+REF: "/home/users/xiaodong/Documents/Project/African1kg/wildebeest_own/reference_inc_MT/BlueWildebeest_HiC_withMT.fasta"   ## must be the same as the one used for mapping
+GOODBED: "/home/users/xiaodong/Documents/Project/Wildebeest/siteQC/new.siteQC.good.bed"  ## Sites that will be INCLUDED in the analysis
+
+## see github for a script to make config
+
+SAMPLES:
+  CGnoNaC_2628: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC_2628.BlueWildebeestWithMT.bam
+  CGnoNaC_2633: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC_2633.BlueWildebeestWithMT.bam
+  CGnoNaC_1356: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC_1356.BlueWildebeestWithMT.bam
+  CGnoNaC__926: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC__926.BlueWildebeestWithMT.bam
+  CGnoZa_58006: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoZa_58006.BlueWildebeestWithMT.bam
+  CGnoNaC_1324: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC_1324.BlueWildebeestWithMT.bam
+  CGnoNaC__954: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC__954.BlueWildebeestWithMT.bam
+  CGnoNaC__962: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC__962.BlueWildebeestWithMT.bam
+  CGnoNaC_2627: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC_2627.BlueWildebeestWithMT.bam
+  CGnoNaC__953: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC__953.BlueWildebeestWithMT.bam
+  CGnoNaC_1329: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC_1329.BlueWildebeestWithMT.bam
+  CGnoZa_58007: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoZa_58007.BlueWildebeestWithMT.bam
+  CGnoNaC_2632: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC_2632.BlueWildebeestWithMT.bam
+  CGnoZaE58013: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoZaE58013.BlueWildebeestWithMT.bam
+  CGnoNaC_2630: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNaC_2630.BlueWildebeestWithMT.bam
+  CGnoNa_58015: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNa_58015.BlueWildebeestWithMT.bam
+  CGnoZaE58005: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoZaE58005.BlueWildebeestWithMT.bam
+  CGnoNa_58017: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoNa_58017.BlueWildebeestWithMT.bam
+  CGnoZa_58016: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoZa_58016.BlueWildebeestWithMT.bam
+  CGnoZaN58014: /jbod1/mikkel/projects/2103_africa1k.git/mapping/wildebeests/filtered_bams/output/CGnoZaN58014.BlueWildebeestWithMT.bam
+
+DEPTHS:
+  CGnoNaC_2628:
+    - 8
+    - 26
+  CGnoNaC_2633:
+    - 8
+    - 40
+  CGnoNaC_1356:
+    - 8
+    - 40
+  CGnoNaC__926:
+    - 8
+    - 34
+  CGnoZa_58006:
+    - 8
+    - 60
+  CGnoNaC_1324:
+    - 8
+    - 40
+  CGnoNaC__954:
+    - 8
+    - 42
+  CGnoNaC__962:
+    - 8
+    - 40
+  CGnoNaC_2627:
+    - 8
+    - 34
+  CGnoNaC__953:
+    - 8
+    - 40
+  CGnoNaC_1329:
+    - 8
+    - 38
+  CGnoZa_58007:
+    - 8
+    - 52
+  CGnoNaC_2632:
+    - 8
+    - 40
+  CGnoZaE58013:
+    - 8
+    - 40
+  CGnoNaC_2630:
+    - 8
+    - 40
+  CGnoNa_58015:
+    - 8
+    - 36
+  CGnoZaE58005:
+    - 8
+    - 26
+  CGnoNa_58017:
+    - 8
+    - 34
+  CGnoZa_58016:
+    - 8
+    - 32
+  CGnoZaN58014:
+    - 8
+    - 22

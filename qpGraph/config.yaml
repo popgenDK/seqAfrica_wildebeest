@@ -1,0 +1,32 @@
+
+
+R: /home/krishang/software/R/R-3.6.1.kelly/my_install/bin/Rscript
+BLOCKLEN: 4e6
+MAXMISS: 0.9
+
+## modify:
+OUTMAIN: "res2"
+PLINK: "/davidData/malthe/africa/gt/results/wildebeest/plink/Goat_wildebeest_variable_sites_mergehartebeest-topi_nomultiallelics_noindels_10dp_2het"
+IND_POP: "/home/users/long/Wildebeest/Qpgraph/findgraph/MappedToGoat/population.labels.IBS.removeAdmixed.removeRelated.txt"
+USEPOPS:
+  - Black 
+  - Brindled4 
+  - Cookson 
+  - EwBeared1 
+  - EwBeared2 
+  - EwBeared3 
+  - Hartebeest 
+  - Nyassa 
+  - WwBeard
+OUTGROUP: Hartebeest 
+NRUNS: 5 ## 
+START_PER_RUN: 80  ## in total 5 * 80 graphs per N admixture events
+ADMIX_EVENTS:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+
+
