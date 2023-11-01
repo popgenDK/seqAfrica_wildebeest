@@ -5,7 +5,7 @@ BLOCKLEN: 4e6
 MAXMISS: 0.9
 
 ## modify:
-OUTMAIN: "res2"
+OUTMAIN: "res"
 PLINK: "/davidData/malthe/africa/gt/results/wildebeest/plink/Goat_wildebeest_variable_sites_mergehartebeest-topi_nomultiallelics_noindels_10dp_2het"
 IND_POP: "/home/users/long/Wildebeest/Qpgraph/findgraph/MappedToGoat/population.labels.IBS.removeAdmixed.removeRelated.txt"
 USEPOPS:
