@@ -1,0 +1,22 @@
+// Search ranges and rules file
+// ****************************
+
+[PARAMETERS]
+//#isInt?       #name   #dist   #min    #max
+1               NPOPB   logunif 100     100000  output
+1               NPOPT   logunif 100     100000  output
+1               NPOPW   logunif 100     100000  output
+1               NANC1   logunif 100     100000  output
+1               NANC2   logunif 100     100000  output
+
+1               TDIV2   logunif 1000    500000  output
+1               TDIV1   logunif 500     TDIV2   paramInRange
+
+1               TADM2   logunif 1       TDIV1   paramInRange
+
+
+[RULES]
+
+[COMPLEX PARAMETERS]
+0        RES1 = NANC1/NPOPT     hide
+0        RES2 = NANC2/NANC1     hide
