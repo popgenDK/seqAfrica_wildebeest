@@ -1,0 +1,9 @@
+ingroup: wildebeest
+results_subdir: wildebeest
+ref:
+  name: Wildebeest
+  fa: /home/users/xiaodong/Documents/Project/African1kg/wildebeest_own/reference_inc_MT/BlueWildebeest_HiC_withMT.fasta
+  fai: /home/users/xiaodong/Documents/Project/African1kg/wildebeest_own/reference_inc_MT/BlueWildebeest_HiC_withMT.fasta.fai
+sites: /home/users/xiaodong/Documents/Project/Wildebeest/siteQC/new.siteQC.good.bed
+tsv: tsvs/wildebeest.tsv
+populations: tsvs/wildebeest_populations.tsv

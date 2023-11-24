@@ -1,0 +1,9 @@
+ingroup: wildebeest
+results_subdir: wildebeest
+ref:
+  name: Goat
+  fa: /home/users/xiaodong/Documents/Project/Wildebeest/reference/external/Goat.fasta
+  fai: /home/users/xiaodong/Documents/Project/Wildebeest/reference/external/Goat.fasta.fai
+sites: /home/users/xiaodong/Documents/Project/Wildebeest/siteQC/external/Goat.siteQC.good.bed
+tsv: tsvs/wildebeestgoat.tsv
+populations:
