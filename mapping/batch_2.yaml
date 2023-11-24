@@ -1,0 +1,237 @@
+# -*- mode: Yaml; -*-
+# Default options.
+# Can also be specific for a set of samples, libraries, and lanes,
+# by including the "Options" hierarchy at the same level as those
+# samples, libraries, or lanes below.
+Options:
+  # Sequencing platform, see SAM/BAM reference for valid values
+  Platform: Illumina
+  # Quality offset for Phred scores, either 33 (Sanger/Illumina 1.8+)
+  # or 64 (Illumina 1.3+ / 1.5+). For Bowtie2 it is also possible to
+  # specify 'Solexa', to handle reads on the Solexa scale. This is
+  # used during adapter-trimming and sequence alignment
+  QualityOffset: 33
+
+  # Settings for trimming of reads, see AdapterRemoval man-page
+  AdapterRemoval:
+     # Set and uncomment to override defaults adapter sequences
+     --adapter1: TODO
+     --adapter2: TODO
+     # Some BAM pipeline defaults differ from AR defaults;
+     # To override, change these value(s):
+     --mm: 3
+     --minlength: 1
+     # Extra features enabled by default; change 'yes' to 'no' to disable
+     --collapse:
+     --collapse-conservatively:
+
+  # Settings for aligners supported by the pipeline
+  Aligners:
+    # Choice of aligner software to use, either "BWA" or "Bowtie2"
+    Program: BWA
+
+    # Settings for mappings performed using BWA
+    BWA:
+      # One of "backtrack", "bwasw", or "mem"; see the BWA documentation
+      # for a description of each algorithm (defaults to 'backtrack')
+      Algorithm: mem
+      # Filter aligned reads with a mapping quality (Phred) below this value
+      MinQuality: 0
+      # Filter reads that did not map to the reference sequence
+      FilterUnmappedReads: no
+      # May be disabled ("no") for aDNA alignments with the 'aln' algorithm.
+      # Post-mortem damage localizes to the seed region, which BWA expects to
+      # have few errors (sets "-l"). See http://pmid.us/22574660
+      UseSeed: yes
+      # Additional command-line options may be specified below. For 'backtrack' these
+      # are applied to the "bwa aln". See Bowtie2 for more examples.
+#      -n: 0.04
+
+  # Command-line options for mapDamage; use long-form options(--length not -l):
+  mapDamage:
+    # By default, the pipeline will downsample the input to 100k hits
+    # when running mapDamage; remove to use all hits
+    --downsample: 100000
+
+  # Set to 'yes' exclude a type of trimmed reads from alignment / analysis;
+  # possible read-types reflect the output of AdapterRemoval
+  ExcludeReads:
+    # Exclude single-end reads (yes / no)?
+    Single: no
+    # Exclude non-collapsed paired-end reads (yes / no)?
+    Paired: no
+    # Exclude paired-end reads for which the mate was discarded (yes / no)?
+    Singleton: no
+    # Exclude overlapping paired-ended reads collapsed into a single sequence
+    # by AdapterRemoval (yes / no)?
+    Collapsed: no
+    # Like 'Collapsed', but only for collapsed reads truncated due to the
+    # presence of ambiguous or low quality bases at read termini (yes / no).
+    CollapsedTruncated: no
+
+  # Optional steps to perform during processing.
+  Features:
+    # If set to 'filter', PCR duplicates are removed from the output files; if set to
+    # 'mark', PCR duplicates are flagged with bit 0x400, and not removed from the
+    # output files; if set to 'no', the reads are assumed to not have been amplified.
+    PCRDuplicates: mark
+    # Set to 'no' to disable mapDamage; set to 'plots' to build basic mapDamage plots;
+    # set to 'model' to build plots and post-mortem damage models; and set to 'rescale'
+    # to build plots, models, and BAMs with rescaled quality scores. All analyses are
+    # carried out per library.
+    mapDamage: no
+    # Generate coverage information for the final BAM and for each 'RegionsOfInterest'
+    # specified in 'Prefixes' (yes / no).
+    Coverage: no
+    # Generate histograms of number of sites with a given read-depth, from 0 to 200,
+    # for each BAM and for each 'RegionsOfInterest' specified in 'Prefixes' (yes / no).
+    Depths: no
+    # Generate summary table for each target (yes / no)
+    Summary: no
+
+
+Genomes:
+  Goat:
+    Path: genomes/Goat.fasta
+  BlueWildebeestWithMT:
+    Path: genomes/BlueWildebeestWithMT.fasta
+
+
+IngroupIllumina:
+  Options:
+    AdapterRemoval:
+       --adapter1: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+       --adapter2: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+  "CGnoZaE58005":
+    "LIB110486":
+      "run002_110486_S1_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110486_wildebeest_black_200758005/run002/110486_S1_L001_R{Pair}_001.fastq.gz"
+      "run002_110486_S1_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110486_wildebeest_black_200758005/run002/110486_S1_L002_R{Pair}_001.fastq.gz"
+      "run003_110486_S1_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110486_wildebeest_black_200758005/run003/LIB110486_S1_L001_R{Pair}_001.fastq.gz"
+
+  "CGnoZa_58006":
+    "LIB110487":
+      "run002_110487_S2_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110487_wildebeest_black_200758006/run002/110487_S2_L001_R{Pair}_001.fastq.gz"
+      "run002_110487_S2_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110487_wildebeest_black_200758006/run002/110487_S2_L002_R{Pair}_001.fastq.gz"
+      "run003_110487_S2_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110487_wildebeest_black_200758006/run003/LIB110487_S2_L001_R{Pair}_001.fastq.gz"
+      "run008_110487_S2_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110487_wildebeest_black_200758006/run008/110487_S2_L001_R{Pair}_001.fastq.gz"
+      "run012_110487_S1_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110487_wildebeest_black_200758006/run012/LIB110487_S1_L001_R{Pair}_001.fastq.gz"
+      "run012_110487_S1_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110487_wildebeest_black_200758006/run012/LIB110487_S1_L002_R{Pair}_001.fastq.gz"
+      "run014_110487_S1_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110487_wildebeest_black_200758006/run014/LIB110487_S1_L001_R{Pair}_001.fastq.gz"
+
+  "CGnoZa_58007":
+    "LIB110488":
+      "run002_110488_S3_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110488_wildebeest_black_200758007/run002/110488_S3_L001_R{Pair}_001.fastq.gz"
+      "run002_110488_S3_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110488_wildebeest_black_200758007/run002/110488_S3_L002_R{Pair}_001.fastq.gz"
+      "run003_110488_S3_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110488_wildebeest_black_200758007/run003/LIB110488_S3_L001_R{Pair}_001.fastq.gz"
+      "run008_110488_S3_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110488_wildebeest_black_200758007/run008/110488_S3_L001_R{Pair}_001.fastq.gz"
+      "run012_110488_S2_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110488_wildebeest_black_200758007/run012/LIB110488_S2_L001_R{Pair}_001.fastq.gz"
+      "run012_110488_S2_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110488_wildebeest_black_200758007/run012/LIB110488_S2_L002_R{Pair}_001.fastq.gz"
+      "run014_110488_S2_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110488_wildebeest_black_200758007/run014/LIB110488_S2_L001_R{Pair}_001.fastq.gz"
+
+  "CGnoZaE58013":
+    "LIB110489":
+      "run002_110489_S4_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110489_wildebeest_black_201258013/run002/110489_S4_L001_R{Pair}_001.fastq.gz"
+      "run002_110489_S4_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110489_wildebeest_black_201258013/run002/110489_S4_L002_R{Pair}_001.fastq.gz"
+
+  "CGnoZaN58014":
+    "LIB110490":
+      "run002_110490_S5_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110490_wildebeest_black_201258014/run002/110490_S5_L001_R{Pair}_001.fastq.gz"
+      "run002_110490_S5_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110490_wildebeest_black_201258014/run002/110490_S5_L002_R{Pair}_001.fastq.gz"
+
+  "CGnoNa_58015":
+    "LIB110491":
+      "run002_110491_S6_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110491_wildebeest_black_201258015/run002/110491_S6_L001_R{Pair}_001.fastq.gz"
+      "run002_110491_S6_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110491_wildebeest_black_201258015/run002/110491_S6_L002_R{Pair}_001.fastq.gz"
+      "run003_110491_S4_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110491_wildebeest_black_201258015/run003/LIB110491_S4_L001_R{Pair}_001.fastq.gz"
+
+  "CGnoZa_58016":
+    "LIB110492":
+      "run002_110492_S7_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110492_wildebeest_black_201258016/run002/110492_S7_L001_R{Pair}_001.fastq.gz"
+      "run002_110492_S7_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110492_wildebeest_black_201258016/run002/110492_S7_L002_R{Pair}_001.fastq.gz"
+
+  "CGnoNa_58017":
+    "LIB110493":
+      "run002_110493_S8_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110493_wildebeest_black_201258017/run002/110493_S8_L001_R{Pair}_001.fastq.gz"
+      "run002_110493_S8_L002": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110493_wildebeest_black_201258017/run002/110493_S8_L002_R{Pair}_001.fastq.gz"
+      "run003_110493_S5_L001": "rawfastq/jbod1/seqAfrica/wildebeest/sid.erda.dk/share_redirect/A2ZSqwRq3X/LIB110493_wildebeest_black_201258017/run003/LIB110493_S5_L001_R{Pair}_001.fastq.gz"
+
+
+OutgroupBGI:
+  Options:
+    AdapterRemoval:
+       --adapter1: AAGTCGGAGGCCAAGCGGTCTTAGGAAGACAA
+       --adapter2: AAGTCGGATCGTAGCCATGTCGTTCTGTGAGCCAAGGAGTTG
+
+  "ABusKeW__626":
+    "Library1":
+      "FP200000267BR_L01": "rawfastq/jbod1/seqAfrica/raw/disk4/210127_SEQ041_FP200000267BR_L01_SP2101080369/FP200000267BR_L01_527_{Pair}.fq.gz"
+
+  "ABusZmW_4583":
+    "Library1":
+      "FP100002004BL_L01": "rawfastq/jbod1/seqAfrica/raw/disk1/210220_SEQ013_FP100002004BL_L01_SP2101080402/FP100002004BL_L01_561_{Pair}.fq.gz"
+
+  "DLunKeW__791":
+    "Library1":
+      "FP100002214TR_L01": "rawfastq/jbod1/seqAfrica/raw/disk2/210126_SEQ023_FP100002214TR_L01_SP2101080339/FP100002214TR_L01_593_{Pair}.fq.gz"
+
+  "DLunBwN_2239":
+    "Library1":
+      "FP100002214TR_L01": "rawfastq/jbod1/seqAfrica/raw/disk2/210126_SEQ023_FP100002214TR_L01_SP2101080321/FP100002214TR_L01_575_{Pair}.fq.gz"
+
+
+# Discarded due to large insert sizes/poor read quality
+# OutgroupIllumina:
+#   Options:
+#     AdapterRemoval:
+#        --adapter1: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+#        --adapter2: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+#
+#   "OGazCaPR4864_35":
+#     "Library1":
+#       "SRR7503135": "/home/users/long/Wildebeest/gemsbok/SRR7503135_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_36":
+#     "Library1":
+#       "SRR7503136": "/home/users/long/Wildebeest/gemsbok/SRR7503136_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_37":
+#     "Library1":
+#       "SRR7503137": "/home/users/long/Wildebeest/gemsbok/SRR7503137_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_38":
+#     "Library1":
+#       "SRR7503138": "/home/users/long/Wildebeest/gemsbok/SRR7503138_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_39":
+#     "Library1":
+#       "SRR7503139": "/home/users/long/Wildebeest/gemsbok/SRR7503139_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_40":
+#     "Library1":
+#       "SRR7503140": "/home/users/long/Wildebeest/gemsbok/SRR7503140_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_51":
+#     "Library1":
+#       "SRR7503151": "/home/users/long/Wildebeest/gemsbok/SRR7503151_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_52":
+#     "Library1":
+#       "SRR7503152": "/home/users/long/Wildebeest/gemsbok/SRR7503152_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_53":
+#     "Library1":
+#       "SRR7503153": "/home/users/long/Wildebeest/gemsbok/SRR7503153_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_54":
+#     "Library1":
+#       "SRR7503154": "/home/users/long/Wildebeest/gemsbok/SRR7503154_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_59":
+#     "Library1":
+#       "SRR7503159": "/home/users/long/Wildebeest/gemsbok/SRR7503159_{Pair}.fastq.gz"
+#
+#   "OGazCaPR4864_60":
+#     "Library1":
+#       "SRR7503160": "/home/users/long/Wildebeest/gemsbok/SRR7503160_{Pair}.fastq.gz"
+
