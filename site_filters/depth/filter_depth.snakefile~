@@ -1,0 +1,105 @@
+# snakemake to do depth filters: from bcf files takes depth per site from the INFO/DP column, then makes distribution and median and based on it generates a bed filek keeping only sites within mindep and maxdep (need to be specified in config) called good.bed. bad.bed is the complement (sites outside the inverval)
+
+
+# input needed in config:
+# outmain name of folder to put output
+# scriptsdir: name of folder with plotting and filtering scripts
+# bcf: bcf file expected to have all sites with data from which dp will be taken
+# allbed: bed file with whole sequence of chromosomes/scaffolds we whish to keep (start should be 0, end should be length of chromosome)
+
+BCFTOOLS="/home/genis/software/bcftools/bcftools"
+BEDTOOLS="/home/genis/software/bedtools2/bin/bedtools"
+
+R="Rscript"
+PYTHON="python3"
+
+
+SCRIPTSDIR=config["scriptsdir"]
+PLOT=os.path.join(SCRIPTSDIR, "plotDepthDistribution.R")
+PLOT2=os.path.join(SCRIPTSDIR, "plotDepthDistributionWithThresholds.R")
+FILTER=os.path.join(SCRIPTSDIR, "doDepthFilter2.py")
+
+OUTMAIN = config["outmain"]
+
+
+
+rule all:
+    input:
+        os.path.join(OUTMAIN, "depths", "depth_distribution_withthres.png"),
+        os.path.join(OUTMAIN, "beds", "good.bed"),
+        os.path.join(OUTMAIN, "beds", "bad.bed")
+
+
+rule check_distribution:
+    input:
+        os.path.join(OUTMAIN,"depths", "depth_distribution.png")
+
+
+rule get_depths:
+    input:
+        bcf = config["bcf"],
+        allbed = config["allbed"]
+    output:
+        dep_dist = os.path.join(OUTMAIN, "depths", "depth_distribution.txt"),
+        pos = os.path.join(OUTMAIN, "depths", "depth_pos.txt"),
+    shell: """
+    {BCFTOOLS} query -T {input.allbed} -f '%CHROM\t%POS\t%INFO/DP4\n' {input.bcf} | awk -F"[,\t]" '{{print $1"\t"$2"\t"$3+$4+$5+$6}}' | tee {output.pos} | awk '{{a[$3]++}} END{{for(v in a){{print v"\t"a[v]}}}}' > {output.dep_dist}
+"""
+
+
+
+rule plot_depths:
+    """calls script that from depth distribution will make a plot of it putting median and thresholds, and will also save median as a text file """
+    input:
+        dep_dist = rules.get_depths.output.dep_dist
+    output:
+        dist_plot = os.path.join(OUTMAIN, "depths", "depth_distribution.png"),
+    params:
+        maxdepth = 5000
+    shell: """
+    {R} {PLOT} {input.dep_dist} {output.dist_plot}
+"""
+
+
+
+rule plot_depths_withthres:
+    """calls script that from depth distribution will make a plot of it putting median and thresholds, and will also save median as a text file """
+    input:
+        dep_dist = rules.get_depths.output.dep_dist
+    output:
+        dist_plot = os.path.join(OUTMAIN, "depths", "depth_distribution_withthres.png"),
+    params:
+        maxdepth = 5000,
+        mindep = config["thresholds"]["min"],
+        maxdep = config["thresholds"]["max"]
+    shell: """
+    {R} {PLOT2} {input.dep_dist} {output.dist_plot} {params.mindep} {params.maxdep}
+"""
+
+
+
+    
+rule filter_depth:
+    input:
+        pos = rules.get_depths.output.pos,
+    output:
+        badbed = os.path.join(OUTMAIN, "beds", "bad.bed"),
+    params:
+        outpre = lambda wildcards, output: output.badbed.replace(".bed", ""),
+        mindep = config["thresholds"]["min"],
+        maxdep = config["thresholds"]["max"]
+    log: os.path.join(OUTMAIN, "beds", "bad.log")
+    shell: """
+    {PYTHON} {FILTER} {input.pos} {params.outpre} {params.mindep} {params.maxdep}
+"""
+
+
+rule do_good_bed:
+    input:
+        allbed = config["allbed"],
+        badbed = rules.filter_depth.output.badbed,
+    output:
+        goodbed = os.path.join(OUTMAIN, "beds", "good.bed"),
+    shell: """
+    {BEDTOOLS} subtract -a {input.allbed} -b {input.badbed} > {output.goodbed}
+"""

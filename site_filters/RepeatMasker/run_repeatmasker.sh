@@ -1,0 +1,1 @@
+/home/users/xiaodong/Software/RepeatMasker/RepeatMasker  -pa 40  -frag 50000 -species Mammalia /home/users/xiaodong/Documents/Project/African1kg/wildebeest_own/reference_inc_MT/BlueWildebeest_HiC_withMT.fasta -dir ./ -xm -xsmall -gff 2>&1 > ./Wildebeest.log

@@ -1,0 +1,228 @@
+"""
+snakemake to do excess of heterozygosity filter
+from genotypes in plink format it will run pcangs to get -inbreeding_sites (inbreeding coefficient per site) and use that to identify sites with significant excess heterozygosity, then remove regions around these sites. It creates good.bed and bad.bed, with regions not showing excess heterozygosity and showing it, respectively. It also make some plots of how it looks locally and a pca
+
+configfile needs:
+       - plinkfile: prefix of binary plink files (name excluding .bed)
+       - chroms: path to file with list of chromosomes to use
+       - ref: path to reference
+       - outmain: path to main output
+       - params:
+                - angsd: minQ: value
+                         minMapQ: value
+                - pcangsd: e: number principal components to use, if dont' know set to 0 and pcangsd infers it
+                - filter: w: size in kb of window to remoe around "bad" site
+                          minF: F below which significantly deviating loci are removed
+                          lrt: likelihood ratio test statistic threshold to assign signficiance (e.g. lrt 24 equivales pvalue of 1e-6
+      - scriptsdir: path to directory with requried scripts
+"""
+
+#ANGSD="/home/genis/software/angsd/angsd"
+PCANGSD="/home/genis/software/pcangsd-v.0.99/pcangsd.py" # MUST BE BEFORE PCANGSD V1, else -sites_save just prints 0 and 1s and nothing works anymore. maybe asks jonas to change
+PYTHON="python3"
+R="Rscript"
+BEDTOOLS="/home/genis/software/bedtools2/bin/bedtools"
+SAMTOOLS="/home/genis/software/samtools-1.9/samtools"
+BCFTOOLS="/home/genis/software/bcftools/bcftools"
+PLINK="/home/genis/software/plink"
+
+SCRIPTSDIR = config["scriptsdir"]
+PLOTPCA = os.path.join(SCRIPTSDIR,"plotPCA.R")
+SELECTSITES = os.path.join(SCRIPTSDIR,"select_bad_sites.py")
+SUMMARIZE_PLOT = os.path.join(SCRIPTSDIR, "summarizePlotExcessHetFilter.R")
+
+OUTMAIN=config["outmain"]
+
+
+CHROMLIST=config["chroms"]
+with open(CHROMLIST, "r") as fh:
+    CHROMS=[x.rstrip() for x in fh.readlines()]
+
+REF = config["ref"]
+
+INBCF=config["bcf"]
+
+# LOAD PARAMS
+E=config["params"]["pcangsd"]["e"]
+MINF=config["params"]["filter"]["minF"]
+W=config["params"]["filter"]["w"]
+LRT=config["params"]["filter"]["lrt"]
+
+
+wildcard_constraints:
+    e = "|".join([str(x) for x in E])
+
+
+rule all:
+    input:
+        expand(os.path.join(OUTMAIN, "beds", "good_e{e}.bed"), e=E),
+        expand(os.path.join(OUTMAIN, "summary", "excessHet_e{e}_summary.tsv"), e=E),
+
+
+
+
+
+rule do_bedall:
+    """do bed file with whole sequence for each included chromosome"""
+    input:
+        fai = ancient("{}.fai".format(REF)),
+        chromlist = CHROMLIST
+    output:
+        bed = os.path.join(OUTMAIN, "beds", "all.bed")
+    shell: """
+    cat {input.chromlist} | xargs -n1 -I {{}} grep -P "^{{}}\t" {input.fai} | awk '{{print $1"\t0\t"$2}}' > {output.bed}
+"""
+
+
+
+rule bcf_to_plink:
+    input:
+        bcf = INBCF,
+        chroms = os.path.join(OUTMAIN, "beds", "all.bed")
+    output:
+        multiext(os.path.join(OUTMAIN, "plink", "inplink_maf005geno005"), ".bed", ".bim", ".fam"),
+    params:
+        outprefix = os.path.join(OUTMAIN, "plink", "inplink_maf005geno005"),
+        keepinds = config["keepinds"],
+        chroms = os.path.join(OUTMAIN, "beds", "all.bed")
+    shell: """
+    {BCFTOOLS} view -T {params.chroms} {input.bcf} | {BCFTOOLS} annotate -Ov -x ID -I +'%CHROM\_%POS' | {PLINK} --vcf /dev/stdin --make-bed --maf 0.05 --allow-extra-chr --keep {params.keepinds} --const-fid --geno 0.05 --out {params.outprefix}
+"""
+
+
+
+rule do_poplist:
+    """extract population assignment from fam file"""
+    input:
+        fam = os.path.join(OUTMAIN, "plink", "inplink_maf005geno005.fam")
+    output:
+        poplist = os.path.join(OUTMAIN, "info", "pop.list")
+    shell:"""
+    cut -f2 -d" " {input.fam} > {output.poplist}
+"""
+
+
+    
+rule do_pcangsd_stuff:
+    """run pcangsd to do hwe equilitbirum test"""
+    input:
+        plink = multiext(os.path.join(OUTMAIN, "plink", "inplink_maf005geno005"), ".bed", ".bim", ".fam")
+    output:
+        multiext(os.path.join(OUTMAIN, "pcangsd", "out_e{e}"),".cov", ".sites", ".lrt.sites.npy", ".inbreed.sites.npy"),
+    params:
+        outprefix = os.path.join(OUTMAIN, "pcangsd", "out_e{e}"),
+        inprefix = os.path.join(OUTMAIN, "plink", "inplink_maf005geno005"),
+        e = "{e}"
+    log: os.path.join(OUTMAIN, "pcangsd", "out_e{e}.log")
+    threads: 20
+    shell:"""
+    if [ {params.e} = 0 ]
+    then
+        {PYTHON} {PCANGSD} -plink {params.inprefix} -sites_save -inbreedSites -o {params.outprefix} -threads {threads} > {log}
+    else
+        {PYTHON} {PCANGSD} -plink {params.inprefix} -sites_save -inbreedSites -o {params.outprefix} -threads {threads} -e {params.e} > {log}
+    fi
+"""
+
+
+
+rule plot_pca:
+    """plots a pca to check pcangsd run seemed fine. now only does a single png pc1 vs pc2,
+    in future maybe do pdf with multiple pcs? maybe can take e value and plot up to that pc?"""
+    input:
+        cov = os.path.join(OUTMAIN, "pcangsd", "out_e{e}.cov"),
+        poplist = os.path.join(OUTMAIN, "info", "pop.list")
+    output:
+        pcaplot = os.path.join(OUTMAIN, "pcangsd", "pca_e{e}.png")
+    shell:"""
+    {R} {PLOTPCA} {input.cov} {input.poplist} {output.pcaplot}
+"""
+
+
+
+rule select_bad_sites:
+    """from pacangsd output select 'bad' sites (sites with significant excess of heterozygosity) and save them to bed format"""
+    input:
+        pcangsd = multiext(os.path.join(OUTMAIN, "pcangsd", "out_e{e}"), ".sites", ".lrt.sites.npy", ".inbreed.sites.npy"),
+    output:
+        badsitesbed = os.path.join(OUTMAIN, "beds", "badsites_e{e}.bed")
+    params:
+        inprefix = os.path.join(OUTMAIN, "pcangsd", "out_e{e}"),
+        minF = MINF,
+        lrt = LRT
+    shell:"""
+    {PYTHON} {SELECTSITES} {params.inprefix} {output.badsitesbed} {params.minF} {params.lrt}
+"""
+
+
+
+rule do_genome_file:
+    """do genome file with length of each included chromosome/scaffold"""
+    input:
+        fai = ancient("{}.fai".format(REF)),
+        chromlist = CHROMLIST
+    output:
+        genomefile = os.path.join(OUTMAIN, "info", "genome_sizes.file")
+    shell: """
+    cat {input.chromlist} | xargs -n1 -I {{}} grep -P "^{{}}\t" {input.fai} | awk '{{print $1"\t"$2}}' > {output.genomefile}
+"""
+
+
+rule sort_bad_sites:
+    """rule to force chromosome order to be the weird one from reference genome"""
+    input:
+        badsitesbed = os.path.join(OUTMAIN, "beds", "badsites_e{e}.bed"),
+        genome = os.path.join(OUTMAIN, "info", "genome_sizes.file")
+    output:
+        badsitesbed = os.path.join(OUTMAIN, "beds", "badsites_reorder_e{e}.bed"),
+    shell:"""
+    {BEDTOOLS} sort -i {input.badsitesbed} -g {input.genome} > {output.badsitesbed}
+"""
+    
+    
+rule make_bad_bed:
+    """expands bad sites to get regions of size W around each bad sites, and then merge overlapping sites"""
+    input:
+        badsitesbed = os.path.join(OUTMAIN, "beds", "badsites_reorder_e{e}.bed"),
+        genome = os.path.join(OUTMAIN, "info", "genome_sizes.file")
+    output:
+        temp_bed = temp(os.path.join(OUTMAIN, "beds", "temp_e{e}.bed")),
+        badbed = os.path.join(OUTMAIN, "beds", "bad_e{e}.bed")
+    params:
+        b = int(W)/2,
+    shell:"""
+    {BEDTOOLS} slop -b {params.b} -i {input.badsitesbed} -g {input.genome} > {output.temp_bed}
+    {BEDTOOLS} merge -i {output.temp_bed} > {output.badbed}
+"""
+
+
+
+rule do_good_bed:
+    """produces bed with regions to keep after applying excess of heterozyosity"""
+    input:
+        badbed = os.path.join(OUTMAIN, "beds", "bad_e{e}.bed"),
+        allbed = os.path.join(OUTMAIN, "beds", "all.bed")
+    output:
+        goodbed = os.path.join(OUTMAIN, "beds", "good_e{e}.bed")
+    shell:"""
+    {BEDTOOLS} subtract -a {input.allbed} -b {input.badbed} > {output.goodbed}
+"""
+
+
+
+rule plot_summarize_filter:
+    input:
+        multiext(os.path.join(OUTMAIN, "pcangsd", "out_e{e}"), ".cov", ".sites", ".lrt.sites.npy", ".inbreed.sites.npy"),
+        badbed = os.path.join(OUTMAIN, "beds", "bad_e{e}.bed"),
+        allbed = os.path.join(OUTMAIN, "beds", "all.bed"),
+    output:
+        summary_table = os.path.join(OUTMAIN, "summary", "excessHet_e{e}_summary.tsv"),
+        bigpdf = os.path.join(OUTMAIN, "summary", "excessHet_e{e}_plotsBig.pdf"),
+    params:
+        inprefix = os.path.join(OUTMAIN, "pcangsd", "out_e{e}"),
+        outprefix = os.path.join(OUTMAIN, "summary", "excessHet_e{e}"),
+        minF = MINF,
+        minLRT = LRT,
+    shell:"""
+    {R} {SUMMARIZE_PLOT} {params.inprefix} {params.outprefix} {input.badbed} {input.allbed} {params.minF} {params.minLRT}
+"""

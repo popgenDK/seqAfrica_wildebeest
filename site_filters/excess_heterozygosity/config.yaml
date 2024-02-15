@@ -1,0 +1,16 @@
+bcf: /davidData/malthe/gt/results/wildebeest/vcf/Wildebeest_wildebeest_variable_nomultiallelics_noindels.bcf.gz
+outmain: "results"
+scriptsdir: "scripts"
+chroms: /home/users/xiaodong/Documents/Project/Wildebeest/siteQC/autosome.list
+ref: /home/users/xiaodong/Documents/Project/African1kg/wildebeest_own/reference_inc_MT/BlueWildebeest_HiC_withMT.fasta
+params:
+ pcangsd:
+  e:
+   - 0
+   - 4
+   - 5
+ filter:
+  minF: -0.9
+  w: 10000
+  lrt: 24
+keepinds: /home/genis/africa1kg/wildebeest/sites_filters/goat/excess_het/keep_bluewildebeest.txt

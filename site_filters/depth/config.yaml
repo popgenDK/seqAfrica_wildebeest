@@ -1,0 +1,7 @@
+outmain: results
+allbed: /home/genis/africa1kg/wildebeest/sites_filters/excess_heterozygosity/wildebeestAutosomes.bed
+bcf: /davidData/malthe/gt/results/wildebeest/vcf/Wildebeest_wildebeest.bcf.gz
+scriptsdir: scripts
+thresholds:
+ min: 1867
+ max: 3111
