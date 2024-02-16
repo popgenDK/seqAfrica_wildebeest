@@ -1,3 +1,8 @@
+source('https://raw.githubusercontent.com/LongLinKU/Rcode/main/admixFun.R')
+source('https://raw.githubusercontent.com/LongLinKU/Rcode/main/Color.R')
+source('https://raw.githubusercontent.com/LongLinKU/Rcode/main/LDplot.R')
+
+
 png('MainFigure1.ABC.png',height=res*widthResRatio,width=res*widthResRatio*widthResizeFactor,res=res)
 
 #layout(matrix(c(rep(c(1,3,6),each=4),rep(c(2,4,5,7),each=3)),ncol=2,byrow=F),widths=c(109.3854,56.31))
