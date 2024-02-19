@@ -92,4 +92,59 @@ legend(12,0.62,legend=c("Black","B.Kalahari","B.Okavango","B.Ovita","B.Etosha","
 dev.off()
 
 
-##########################################
+###################################### ROH vs Het, fig 5G,H ############################################
+library(tidyverse)
+
+palette(c("#1BB6AF","#088BBE","#172869","#EA7580","#F6A1A5","#F8CD9C"))
+
+size_prop <-function(x){
+        n=1540922509/1000
+       #Less1M=sum(x[x<=1000])/n
+        Less2M=sum(x[x>1000 & x<=2000])/n
+        Less5M=sum(x[x>2000 & x<=8000])/n
+        #Less8M=sum(x[x>5000 & x<=8000])/n
+        Large8M=sum(x[x>8000])/n
+        #data.frame(ShorterThan1M=Less1M,Between1M_and_2M=Less2M,Between2M_and_5M=Less5M,Between5M_and_8M=Less8M,LongerThan8M=Large8M)
+                data.frame(Between1M_and_2M=Less2M,Between2M_and_8M=Less5M,LongerThan8M=Large8M)
+}
+d=read.table('all.hom.byPlink',header=T)
+
+pop<-read.table('withinSub.maf.ad.pop.IBS.txt',stringsAsFactors=F)
+pop=pop[pop$V2=='W.white-beard' | pop$V2=='E.white-beard',] # to select pop
+rownames(pop)<-pop$V1
+
+nd <- d %>% group_by(IID) %>% summarize(size_prop(KB))
+nd<-as.data.frame(nd)
+rownames(nd)=nd$IID
+nd=nd[nd$IID %in% pop$V1,]
+
+pop<-cbind(pop,data.frame(matrix(rep(rep(0,dim(nd)[2]-1),dim(pop)[1]),nrow=dim(pop)[1],byrow=T)))
+pop[rownames(nd),4:dim(pop)[2]]=nd[,2:dim(nd)[2]]
+ord<-order(pop$V3)
+pop<-pop[ord,]
+pops<-pop$V3
+
+pop$roh=rowSums(pop[,4:dim(pop)[2]])
+h =read.table('../../MasterFile/MasterFile.13012023.txt',sep='\t',h=T,stringsAsFactors=F,comment.char='',na.strings=c('NA','#N/A',''))
+h=h[!is.na(h$NewH),]
+rownames(h)=h$SampleID
+pop$het = h[as.character(pop$V1),'NewH']
+pop$color = h[as.character(pop$V1),'IBSColors']
+
+pop$V3[pop$V3=='E.white_beared1']='E.Monduli'
+pop$V3[pop$V3=='E.white_beared2']='E.Amboseli'
+pop$V3[pop$V3=='E.white_beared3']='E.Nairobi'
+pop$V3[pop$V3=='W.white']='W-Serengeti'
+ggplot(pop,aes(x=roh,y=het)) +
+        geom_point(aes(color=V3,shape=V3),size=3) +
+        geom_smooth(method='lm',se = FALSE,color='black',linewidth=2)+
+        theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+        labs(x='ROH Proportion',y='Heterozygosity') +
+        theme_classic()+
+        scale_color_manual(name = 'Populations', values = c('W.wBearded'='orangered2','E.wBearded_TzN'='#8A2BE2','E.wBearded_KeSAmb'='#7B68EE','E.wBearded_KeSNai'='mediumorchid2')) + scale_shape_manual(name='Popula
+tions',values=c('W.wBearded'=19,'E.wBearded_TzN'=17,'E.wBearded_KeSAmb'=18,'E.wBearded_KeSNai'=15))
+ggsave('het.vs.roh.BeardOnly.newH.pdf',w=5,h=2)
+
+
+
+
