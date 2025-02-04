@@ -1,0 +1,125 @@
+import fnmatch
+import os
+import sys
+from pathlib import Path
+
+#######################################################################################
+# Configuration
+
+BATCH = config.get("batch")
+if BATCH is None:
+    sys.exit("ERROR: Specify batch using e.g. `snakemake --config batch=batch_1`")
+
+# Is preliminary filtering enabled? In that case only collect basic statistics,
+# don't do any actual filtering
+PRELIMINARY = bool(int(config.get("preliminary", "0")))
+
+SRC_DIR = Path(config.get("src_dir", f"{BATCH}.raw_bams"))
+DST_DIR = Path(f"{BATCH}.preliminary_stats") if PRELIMINARY else Path(f"{BATCH}")
+
+if not SRC_DIR.exists():
+    sys.exit(f"ERROR: Source directory {SRC_DIR!r} does not exist")
+
+
+#######################################################################################
+# Utility functions
+
+# Generates list of desired output files based on existing input files
+def _generate_output_files(destinaton, filepath):
+    for it in filepath.iterdir():
+        if it.suffix == ".bam":
+            sample, genome, _ = it.name.split(".", 2)
+
+            yield f"{destinaton}/{sample}.{genome}.json"
+            if not PRELIMINARY:
+                yield f"{destinaton}/{sample}.{genome}.idxstats.txt"
+                yield f"{destinaton}/{sample}.{genome}.stats.txt"
+
+
+#######################################################################################
+# Rules
+
+# Depend on all desired output files to force execution of the rules below
+rule all:
+    input:
+        _generate_output_files(DST_DIR, SRC_DIR)
+
+if PRELIMINARY:
+    rule preliminary_stats:
+        input:
+            f"{SRC_DIR}/{{sample}}.bam"
+        output:
+            json=f"{DST_DIR}/{{sample}}.json"
+        threads: 4
+        shell:
+            """
+            python3 ./install/scripts/finalize_bam.py {input} \
+                --out-json {output.json}
+            """
+
+else:
+    rule filter_bam:
+        input:
+            f"{SRC_DIR}/{{sample}}.bam"
+        output:
+            bam=f"{DST_DIR}/{{sample}}.bam",
+            junk=f"{DST_DIR}/{{sample}}.junk.bam",
+            json=f"{DST_DIR}/{{sample}}.json"
+        threads: 4
+        shell:
+            """
+            python3 ./install/scripts/finalize_bam.py {input} \
+                --threads {threads} \
+                --strict-mate-alignments \
+                --allow-improper-pairs \
+                --min-paired-insert-size 50 \
+                --max-paired-insert-size 1000 \
+                --min-mapped-bases 50 \
+                --min-mapped-fraction 0.5 \
+                --out-passed {output.bam} \
+                --out-failed {output.junk} \
+                --out-json {output.json}
+            """
+
+
+rule samtools_stats:
+    input:
+        "{filename}.bam"
+    output:
+        "{filename}.stats.txt"
+    threads: 3
+    shell:
+        """
+        TMP={output}.${{RANDOM}}.tmp
+        samtools stats --threads {threads} "{input}" > "${{TMP}}"
+        mv "${{TMP}}" "{output}"
+        """
+
+
+rule samtools_idx:
+    input:
+        "{filename}.bam"
+    output:
+        "{filename}.bam.bai"
+    threads: 3
+    shell:
+        """
+        TMP={output}.${{RANDOM}}.tmp
+        samtools index -@ {threads} "{input}" "${{TMP}}"
+        mv "${{TMP}}" "{output}"
+        """
+
+
+rule samtools_idxstats:
+    input:
+        bam="{filename}.bam",
+        bai="{filename}.bam.bai"
+    output:
+        "{filename}.idxstats.txt"
+    threads: 3
+    shell:
+        """
+        TMP={output}.${{RANDOM}}.tmp
+        samtools idxstats --threads {threads} "{input.bam}" > "${{TMP}}"
+        mv "${{TMP}}" "{output}"
+        """

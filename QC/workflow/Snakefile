@@ -1,0 +1,117 @@
+import itertools as it
+from pathlib import Path
+
+
+def add_ext(p, ext):
+    return(Path(str(p) + ext))
+
+SATC = "/home/krishang/software/SATC/SATC_V2/satc.R"
+
+
+SCRIPT_DIR = os.path.join(workflow.basedir, "scripts")
+OUTMAIN = Path(config["outmain"])
+
+MINQ=config["minQ"]
+MINMAPQ=config["minmapQ"]
+
+NBLOCKS = config["nblocks"]
+BLOCKSIZE = config["blocksize"]
+BEDFILE_SPLIT=min(20, NBLOCKS)
+
+whatrefs = ["close", "distant"]
+
+wildcard_constraints:
+    sample = "|".join(config["samples"]),
+    s1 = "|".join(config["samples"]),
+    s2 = "|".join(config["samples"]),
+    whatref = "|".join(whatrefs),
+
+rule all:
+    shell:
+        "echo targets: RUN_json RUN_satc RUN_multiqc_pre RUN_multiqc_post RUN_errorrate RUN_depths RUN_hetero RUN_scaf RUN_related RUN_pca RUN_ibs RUN_all"
+
+
+rule RUN_json:
+    input:
+        ## jsons
+        OUTMAIN / "plots" / "matches_pct.passed.png",
+        OUTMAIN / "plots" / "insert_sizes.passed.png",
+        OUTMAIN / "plots" / "mapping_quality.passed.png",
+        OUTMAIN / "plots" / "query_lengths.passed.png",
+        OUTMAIN / "plots" / "stats_passed_failed.png",
+        OUTMAIN / "plots" / "stats_exclusion_freq.pdf",
+        OUTMAIN / "plots" / "stats_exclusion_count.pdf",
+
+rule RUN_satc:
+    input:
+         OUTMAIN / "SATC" / "close_ref_sampleSex.tsv",
+         OUTMAIN / "SATC" / "distant_ref_sampleSex.tsv",
+
+rule RUN_multiqc_pre:
+    input:
+        pre = OUTMAIN / "multiqc" / "premap.html",
+        pre2 = OUTMAIN / "multiqc" / "premap_perlane.html",
+
+rule RUN_multiqc_post:
+    input:
+        postclose = OUTMAIN / "multiqc" / "postmap_closeref.html",
+        postdist = OUTMAIN / "multiqc" / "postmap_distantref.html",
+        postclose_minmapq = OUTMAIN / "multiqc" / "postmap_closeref_minmapQ.html",
+        postdist_minmapq = OUTMAIN / "multiqc" / "postmap_distantref_minmapQ.html",
+        stats = OUTMAIN / "multiqc" / "stats.html",
+
+rule RUN_errorrate:
+    input:
+         OUTMAIN / "errorrate" / "angsdErrorEst.txt",
+
+rule RUN_depths:
+    input:
+         OUTMAIN / "plots" / "depths_zoom.png",
+         OUTMAIN / "plots" / "depths_global.png",
+
+rule RUN_hetero:
+    input:
+         OUTMAIN / "hetero" / "collect_het.png"
+
+rule RUN_scaf:
+    input:
+         OUTMAIN / "plots" / "cumsum_scafs.png",
+
+rule RUN_related:
+    input:
+        ## expand( OUTMAIN / "sfs_2d", "{whatref}", "collected.txt"), whatref=whatrefs)
+        expand( OUTMAIN / "sfs_2d" / "{whatref}_king.png", whatref="close")
+
+rule RUN_pca:
+    input:
+        expand( OUTMAIN / "pca" / "{whatref}_pop.png", whatref=whatrefs)
+
+rule RUN_ibs:
+    input:
+        expand( OUTMAIN / "ibs" / "{whatref}.tree", whatref=whatrefs)
+
+
+rule RUN_all:
+    input:
+        rules.RUN_json.input,
+        rules.RUN_satc.input,
+        rules.RUN_multiqc_pre.input,
+        rules.RUN_multiqc_post.input,
+        rules.RUN_errorrate.input,
+        rules.RUN_depths.input,
+        rules.RUN_hetero.input,
+        rules.RUN_scaf.input,
+        rules.RUN_related.input,
+        rules.RUN_pca.input,
+        rules.RUN_ibs.input,
+
+include: "rules/common.smk"
+include: "rules/fastqc.smk"
+include: "rules/mapstats.smk"
+include: "rules/subsample.smk"
+include: "rules/errorrates.smk"
+include: "rules/depth.smk"
+include: "rules/hetero.smk"
+include: "rules/satc.smk"
+include: "rules/gt_to_pca.smk"
+include: "rules/ibs.smk"

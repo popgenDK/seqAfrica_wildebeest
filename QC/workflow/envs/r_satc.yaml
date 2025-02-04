@@ -1,0 +1,5 @@
+channels:
+- conda-forge
+dependencies:
+- r=3
+- r-mclust

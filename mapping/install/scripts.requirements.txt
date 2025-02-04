@@ -1,0 +1,6 @@
+coloredlogs==15.0.1
+humanfriendly==10.0
+pysam==0.20.0
+pyyaml==6.0
+ruamel.yaml.clib==0.2.7
+ruamel.yaml==0.17.21

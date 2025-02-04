@@ -1,0 +1,7 @@
+channels:
+- bioconda
+dependencies:
+- python=3.7
+- pip:
+  # Requires py3.7, but conda package is incompatible
+  - multiqc==1.14

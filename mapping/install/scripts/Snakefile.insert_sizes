@@ -1,0 +1,48 @@
+import fnmatch
+import os
+import sys
+from pathlib import Path
+
+#######################################################################################
+# Configuration
+
+BATCH = config.get("batch")
+if BATCH is None:
+    sys.exit("ERROR: Specify batch using e.g. `snakemake --config batch=batch_1`")
+
+SRC_DIR = Path(f"{BATCH}.raw_bams")
+DST_DIR = Path(f"{BATCH}.insert_sizes")
+
+if not SRC_DIR.exists():
+    sys.exit(f"ERROR: Source directory {SRC_DIR!r} does not exist")
+
+
+#######################################################################################
+# Utility functions
+
+# Generates list of desired output files based on existing input files
+def _generate_output_files(destinaton, filepath):
+    for it in filepath.iterdir():
+        if it.suffix == ".bam":
+            sample, genome, _ = it.name.split(".", 2)
+
+            yield f"{destinaton}/{sample}.{genome}.tsv"
+
+
+#######################################################################################
+# Rules
+
+rule all:
+    input:
+        _generate_output_files(DST_DIR, SRC_DIR)
+
+
+rule filter_bam:
+    input:
+        f"{SRC_DIR}/{{sample}}.bam"
+    output:
+        f"{DST_DIR}/{{sample}}.tsv"
+    shell:
+        """
+        python3 ./install/scripts/insert_size_quantiles.py {input} > {output}
+        """

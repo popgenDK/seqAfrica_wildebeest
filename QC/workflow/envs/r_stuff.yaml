@@ -1,0 +1,10 @@
+channels:
+- conda-forge
+dependencies:
+- r=4
+- r-ggplot2
+- r-data.table
+- r-reshape2
+- r-RColorBrewer
+- r-ape
+- r-bit64
